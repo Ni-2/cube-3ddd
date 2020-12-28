@@ -14,6 +14,8 @@ export default (boxParameters) => http.createServer((request, response) => {
             });
 
             response.setHeader('Content-Type', 'application/json');
+            response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
+            response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
 
             if (request.method === 'GET') {
                 response.statusCode = 200;

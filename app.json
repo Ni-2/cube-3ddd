@@ -1,0 +1,21 @@
+{
+    "name": "cube 3D",
+    "description": "Here is a simple Cube 3D object that you can manipulate",
+    "scripts": {
+    },
+    "env": {
+    },
+    "formation": {
+        "web": {
+        "quantity": 1
+        }
+    },
+    "addons": [
+
+    ],
+    "buildpacks": [
+        {
+        "url": "heroku/nodejs"
+        }
+    ]
+}

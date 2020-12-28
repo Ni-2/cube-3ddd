@@ -1,5 +1,5 @@
 {
-  "name": "cube",
+  "name": "cube-3d",
   "version": "1.1.0",
   "description": "Here is a simple Cube 3D object that you can manipulate",
   "type" : "module",
