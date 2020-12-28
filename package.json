@@ -2,11 +2,14 @@
   "name": "cube-3d",
   "version": "1.1.0",
   "description": "Here is a simple Cube 3D object that you can manipulate",
-  "type" : "module",
+  "type": "module",
   "cacheDirectories": [
     "node_modules",
     "react-ui/node_modules"
   ],
   "author": "Nikita Teremovskiy",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }

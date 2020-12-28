@@ -1,44 +1,45 @@
-import http from 'http';
+import express from 'express';
+import path from 'path';
 import makeTriangulation from './makeTriangulation.js';
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default (boxParameters) => http.createServer((request, response) => {
-    const body = [];
-    
-    request
-        .on('error', err => { console.error(err) })
-        .on('data', (chunk) => body.push(chunk.toString()))
-        .on('end', () => {
-            response.on('error', err => {
-                console.error(err);
-            });
+export default (boxParameters) => {
+    const app = express();
 
-            response.setHeader('Content-Type', 'application/json');
-            response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
-            response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
+    // Priority serve any static files.
+    app.use(express.static(path.resolve(process.cwd(), '../react-ui/build')));
 
-            if (request.method === 'GET') {
-                response.statusCode = 200;
-                const url = new URL(request.url, `http://${request.headers.host}`);
-                const { set } = Object.fromEntries(url.searchParams);
-                if (set === 'defaultParams') {
-                    const { defaultParameters } = boxParameters;
-                    boxParameters = { defaultParameters };
-                    response.end(JSON.stringify(boxParameters.defaultParameters));
-                } else {
-                    response.end(JSON.stringify(boxParameters.usersParameters
-                        || boxParameters.defaultParameters));
-                }
-                return;
-            }
-            const data = JSON.parse(body);
-            console.log(data);
-            const triangulation = makeTriangulation(data);
-            boxParameters.usersParameters = { ...data, ...triangulation };
+    app.get((request, response) => {
+        response.set('Content-Type', 'application/json');
+        response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
+        response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
 
-            response.statusCode = 201;
-            response.end(JSON.stringify(boxParameters.usersParameters));
-        });
+        response.statusCode = 200;
+        const url = new URL(request.url, `http://${request.headers.host}`);
+        const { set } = Object.fromEntries(url.searchParams);
+        if (set === 'defaultParams') {
+            const { defaultParameters } = boxParameters;
+            boxParameters = { defaultParameters };
+            response.json(boxParameters.defaultParameters);
+        } else {
+            response.json(boxParameters.usersParameters
+                || boxParameters.defaultParameters);
+        }
+    });
 
-    request.resume();
-});
+    app.post((request, response) => {
+        response.setHeader('Content-Type', 'application/json');
+        response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
+        response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
+
+        const data = JSON.parse(request.data);
+        const triangulation = makeTriangulation(data);
+        boxParameters.usersParameters = { ...data, ...triangulation };
+
+        response.statusCode = 201;
+        response.json(boxParameters.usersParameters);
+
+    });
+
+    return app;
+};
