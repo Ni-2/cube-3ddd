@@ -3,7 +3,7 @@ import path from 'path';
 import makeTriangulation from './makeTriangulation.js';
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default (boxParameters, port) => {
+export default (boxParameters, port, isDev) => {
     const app = express();
 
     // Priority serve any static files.

@@ -20,5 +20,5 @@ if (!isDev && cluster.isMaster) {
   });
 
 } else {
-  makeServer(PORT);
+  makeServer(PORT, isDev);
 }
