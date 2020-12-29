@@ -10,7 +10,7 @@ export default (boxParameters, port, isDev) => {
     app.use(express.static(path.resolve(__dirname, '../cube-ui/build')));
 
     app.use(express.json()); // for parsing application/json
-    app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+    app.use(express.urlencoded({ extended: false })); // for parsing application/x-www-form-urlencoded
 
     // Answer API requests.
     app.get('/api', (request, response) => {
