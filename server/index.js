@@ -8,8 +8,5 @@ export default (port, callback = () => {}) => {
     const data = fs.readFileSync(absoluteFileName, 'utf-8');
     const boxParameters = JSON.parse(data);
 
-    const server = makeServer(boxParameters);
-    server.listen(port, () => {
-        console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${PORT}`);
-    });
+    const server = makeServer(boxParameters, port);
 };

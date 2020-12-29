@@ -3,7 +3,7 @@ import path from 'path';
 import makeTriangulation from './makeTriangulation.js';
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default (boxParameters) => {
+export default (boxParameters, port) => {
     const app = express();
 
     // Priority serve any static files.
@@ -49,5 +49,7 @@ export default (boxParameters) => {
         response.sendFile(path.resolve(__dirname, '../cube-ui/build', 'index.html'));
     });
 
-    return app;
+    app.listen(port, function () {
+        console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${port}`);
+    });
 };
