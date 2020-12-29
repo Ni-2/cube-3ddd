@@ -7,14 +7,17 @@ export default (boxParameters) => {
     const app = express();
 
     // Priority serve any static files.
-    app.use(express.static(path.resolve(process.cwd(), '../react-ui/build')));
+    app.use(express.static(path.resolve(process.cwd(), 'cube-ui/build')));
 
-    app.get((request, response) => {
+    app.use(express.json()); // for parsing application/json
+    app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+    // Answer API requests.
+    app.get('/api', (request, response) => {
         response.set('Content-Type', 'application/json');
-        response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
-        response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
+        response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
 
-        response.statusCode = 200;
+        response.status(200);
         const url = new URL(request.url, `http://${request.headers.host}`);
         const { set } = Object.fromEntries(url.searchParams);
         if (set === 'defaultParams') {
@@ -27,18 +30,23 @@ export default (boxParameters) => {
         }
     });
 
-    app.post((request, response) => {
-        response.setHeader('Content-Type', 'application/json');
-        response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
-        response.setHeader('Access-Control-Allow-Methods', ['POST', 'GET']);
+    app.post('/api', (request, response) => {
+        response.set('Content-Type', 'application/json');
+        response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
 
-        const data = JSON.parse(request.data);
-        const triangulation = makeTriangulation(data);
-        boxParameters.usersParameters = { ...data, ...triangulation };
+        const data = request.body;
+        const parsedData = JSON.parse(Object.keys(data)[0]);
+        const triangulation = makeTriangulation(parsedData);
+        boxParameters.usersParameters = { ...parsedData, ...triangulation };
 
-        response.statusCode = 201;
+        response.status(201);
         response.json(boxParameters.usersParameters);
 
+    });
+
+    // All remaining requests return the React app, so it can handle routing.
+    app.get('*', function(request, response) {
+        response.sendFile(path.resolve(process.cwd(), 'cube-ui/build', 'index.html'));
     });
 
     return app;
