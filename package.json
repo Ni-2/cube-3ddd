@@ -3,14 +3,17 @@
   "version": "1.1.0",
   "description": "Here is a simple Cube 3D object that you can manipulate",
   "type": "module",
+  "scripts": {
+    "start": "node server/bin/server-for-cube.js",
+    "build": "cd cube-ui/ && npm install && npm run build"
+  },
   "cacheDirectories": [
     "node_modules",
-    "react-ui/node_modules"
+    "cube-ui/node_modules"
   ],
   "author": "Nikita Teremovskiy",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0",
     "express": "^4.17.1"
   }
 }
