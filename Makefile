@@ -11,4 +11,4 @@ start-frontend-dev:
 	cd cube-ui/ && npm run build && serve -s build
 
 deploy:
-	node server/bin/server-for-cube.js
+	node lib/bin/server-for-cube.js

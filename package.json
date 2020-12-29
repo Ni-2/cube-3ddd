@@ -5,6 +5,9 @@
   "engines": {
     "node": "10.x"
   },
+  "scripts": {
+    "build": "babel server -d lib"
+  },
   "cacheDirectories": [
     "node_modules",
     "cube-ui/node_modules"
@@ -13,5 +16,10 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11"
   }
 }
