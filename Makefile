@@ -1,4 +1,7 @@
 start-backend:
+	node server/bin/server-for-cube.js
+	
+start-backend-dev:
 	nodemon --watch server --inspect server/bin/server-for-cube.js
 
 start-frontend:

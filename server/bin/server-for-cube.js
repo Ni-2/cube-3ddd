@@ -4,7 +4,7 @@ import os from 'os';
 const numCPUs = os.cpus().length;
 
 const isDev = process.env.NODE_ENV !== 'production';
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
