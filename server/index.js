@@ -9,5 +9,7 @@ export default (port, callback = () => {}) => {
     const boxParameters = JSON.parse(data);
 
     const server = makeServer(boxParameters);
-    server.listen(port, () => callback(server));
+    server.listen(port, () => {
+        console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${PORT}`);
+    });
 };

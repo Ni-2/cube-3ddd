@@ -46,7 +46,7 @@ export default (boxParameters) => {
 
     // All remaining requests return the React app, so it can handle routing.
     app.get('*', function(request, response) {
-        response.sendFile(path.resolve(__dirname, '../cube-ui/build/index.html'));
+        response.sendFile(path.resolve(__dirname, '../cube-ui/build', 'index.html'));
     });
 
     return app;
