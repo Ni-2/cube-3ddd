@@ -39,7 +39,7 @@ export default (port, isDev) => {
         app.use(express.urlencoded({ extended: false })); // for parsing application/x-www-form-urlencoded
 
         // Get absolute name of json keeping users and default parameters
-        const absoluteFileName = path.resolve(__dirname, './boxParameters.json');
+        const absoluteFileName = path.resolve(__dirname, '../boxParameters.json');
 
         // Answer API requests.
         app.get('/api', (request, response) => {
