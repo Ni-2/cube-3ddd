@@ -8,7 +8,7 @@ npm-debug.log
 .DS_Store
 
 # production
-/lib
+lib
 
 # Docker
 Dockerfile

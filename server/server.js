@@ -24,10 +24,12 @@ export default (port, isDev) => {
           console.error(`Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`);
         });
 
-      } else {
-          const absoluteFileName = path.resolve(__dirname, './boxParameters.json');
-        const data = fs.readFileSync(absoluteFileName, 'utf-8');
-        const boxParameters = JSON.parse(data);
+    } else {
+
+        // Get data for triangulation
+        const absoluteFileName = path.resolve(__dirname, './boxParameters.json');
+        const wetBoxParameters = fs.readFileSync(absoluteFileName, 'utf-8');
+        let boxParameters = JSON.parse(wetBoxParameters);
 
         const app = express();
 
@@ -66,7 +68,6 @@ export default (port, isDev) => {
 
             response.status(201);
             response.json(boxParameters.usersParameters);
-
         });
 
         // All remaining requests return the React app, so it can handle routing.
