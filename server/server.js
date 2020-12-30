@@ -1,55 +1,81 @@
-import express from 'express';
+import fs from 'fs';
 import path from 'path';
+import express from 'express';
+import cluster  from 'cluster';
+
+import os from 'os';
+const numCPUs = os.cpus().length;
+
 import makeTriangulation from './makeTriangulation.js';
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default (boxParameters, port, isDev) => {
-    const app = express();
+export default (port, isDev) => {
+    if (!isDev && cluster.isMaster) {
 
-    // Priority serve any static files.
-    app.use(express.static(path.resolve(__dirname, '../cube-ui/build')));
+        // Multi-process to utilize all CPU cores.
+        console.error(`Node cluster master ${process.pid} is running`);
 
-    app.use(express.json()); // for parsing application/json
-    app.use(express.urlencoded({ extended: false })); // for parsing application/x-www-form-urlencoded
-
-    // Answer API requests.
-    app.get('/api', (request, response) => {
-        response.set('Content-Type', 'application/json');
-        response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
-
-        response.status(200);
-        const url = new URL(request.url, `http://${request.headers.host}`);
-        const { set } = Object.fromEntries(url.searchParams);
-        if (set === 'defaultParams') {
-            const { defaultParameters } = boxParameters;
-            boxParameters = { defaultParameters };
-            response.json(boxParameters.defaultParameters);
-        } else {
-            response.json(boxParameters.usersParameters
-                || boxParameters.defaultParameters);
+        // Fork workers.
+        for (let i = 0; i < numCPUs; i++) {
+          cluster.fork();
         }
-    });
 
-    app.post('/api', (request, response) => {
-        response.set('Content-Type', 'application/json');
-        response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
+        cluster.on('exit', (worker, code, signal) => {
+          console.error(`Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`);
+        });
 
-        const data = request.body;
-        const parsedData = JSON.parse(Object.keys(data)[0]);
-        const triangulation = makeTriangulation(parsedData);
-        boxParameters.usersParameters = { ...parsedData, ...triangulation };
+      } else {
+          const absoluteFileName = path.resolve(__dirname, './boxParameters.json');
+        const data = fs.readFileSync(absoluteFileName, 'utf-8');
+        const boxParameters = JSON.parse(data);
 
-        response.status(201);
-        response.json(boxParameters.usersParameters);
+        const app = express();
 
-    });
+        // Priority serve any static files.
+        app.use(express.static(path.resolve(__dirname, '../cube-ui/build')));
 
-    // All remaining requests return the React app, so it can handle routing.
-    app.get('*', function(request, response) {
-        response.sendFile(path.resolve(__dirname, '../cube-ui/build', 'index.html'));
-    });
+        app.use(express.json()); // for parsing application/json
+        app.use(express.urlencoded({ extended: false })); // for parsing application/x-www-form-urlencoded
 
-    app.listen(port, function () {
-        console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${port}`);
-    });
+        // Answer API requests.
+        app.get('/api', (request, response) => {
+            response.set('Content-Type', 'application/json');
+            response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
+
+            response.status(200);
+            const url = new URL(request.url, `http://${request.headers.host}`);
+            const { set } = Object.fromEntries(url.searchParams);
+            if (set === 'defaultParams') {
+                const { defaultParameters } = boxParameters;
+                boxParameters = { defaultParameters };
+                response.json(boxParameters.defaultParameters);
+            } else {
+                response.json(boxParameters.usersParameters
+                    || boxParameters.defaultParameters);
+            }
+        });
+
+        app.post('/api', (request, response) => {
+            response.set('Content-Type', 'application/json');
+            response.set('Access-Control-Allow-Methods', ['POST', 'GET']);
+
+            const data = request.body;
+            const parsedData = JSON.parse(Object.keys(data)[0]);
+            const triangulation = makeTriangulation(parsedData);
+            boxParameters.usersParameters = { ...parsedData, ...triangulation };
+
+            response.status(201);
+            response.json(boxParameters.usersParameters);
+
+        });
+
+        // All remaining requests return the React app, so it can handle routing.
+        app.get('*', function(request, response) {
+            response.sendFile(path.resolve(__dirname, '../cube-ui/build', 'index.html'));
+        });
+
+        app.listen(port, function () {
+            console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${port}`);
+        });
+    }
 };

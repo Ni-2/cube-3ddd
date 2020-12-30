@@ -6,7 +6,7 @@
     "node": "12.x"
   },
   "scripts": {
-    "start": "node lib/bin/server-for-cube.js",
+    "start": "node lib/bin/",
     "build": "babel server -d lib && cd cube-ui/ && npm install && npm run build"
   },
   "cacheDirectories": [
