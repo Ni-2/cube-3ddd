@@ -1,7 +1,7 @@
-# Only fo development
+# Only for development
 
-backend:
+start:
 	nodemon --watch lib --inspect lib/bin/
 
-frontend:
-	cd cube-ui/ && npm run build && serve -s build
+build:
+	./node_modules/.bin/babel server -d lib && cd cube-ui/ && npm run build
