@@ -1,10 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-// eslint-disable-next-line import/no-anonymous-default-export
-export default ({ boxLength, boxHeight, boxWidth, points, faces }) => {
-  const canvas = document.querySelector('#c');
-  const renderer = new THREE.WebGLRenderer({canvas});
+export const makeThreeObj = (canvasRef, currentParams ) => {
+  const { boxLength, boxHeight, boxWidth, points, faces } = currentParams;
+  const renderer = new THREE.WebGLRenderer({ canvas: canvasRef });
 
   const fov = 50;
   const aspect = window.innerWidth / window.innerHeight;  // the canvas default
@@ -13,11 +12,11 @@ export default ({ boxLength, boxHeight, boxWidth, points, faces }) => {
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   camera.position.set(boxLength * 2, boxHeight * 1.2, boxWidth * 3);
 
-  const controls = new OrbitControls(camera, canvas);
+  const controls = new OrbitControls(camera, canvasRef);
   controls.target.set(boxLength / 2, boxHeight / 2, boxWidth / 2);
   controls.update();
 
-  const scene = new THREE.Scene();
+  const scene = new THREE.Scene()
   scene.background = new THREE.Color(0x61B7CF);
 
   const addLight = (...pos) => {
@@ -63,8 +62,7 @@ export default ({ boxLength, boxHeight, boxWidth, points, faces }) => {
     return needResize;
   }
 
-  function render(time) {
-    time *= 0.001;
+  function render() {
 
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
@@ -73,9 +71,11 @@ export default ({ boxLength, boxHeight, boxWidth, points, faces }) => {
     }
 
     renderer.render(scene, camera);
-
-    requestAnimationFrame(render);
   }
 
-  requestAnimationFrame(render);
+  render();
+  
+  controls.addEventListener('change', render);
+  window.addEventListener('resize', render);
+
 };

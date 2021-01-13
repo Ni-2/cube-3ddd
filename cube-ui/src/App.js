@@ -1,9 +1,18 @@
 import axios from 'axios';
 import React from 'react';
-import threeObj from './threeObj';
+import { makeThreeObj } from './threeObj';
 import cn from 'classnames';
+import _ from 'lodash';
 
 const url = '/api';
+
+const emptyState = {
+  boxLength: '',
+  boxWidth: '',
+  boxHeight: '',
+  points: [],
+  faces: [],
+};
 
 export default class App extends React.Component {
   constructor(props) {
@@ -13,15 +22,14 @@ export default class App extends React.Component {
         boxLength: 0,
         boxWidth: 0,
         boxHeight: 0,
+        points: [],
+        faces: [],
       },
-      usersParams: {
-        boxLength: '',
-        boxWidth: '',
-        boxHeight: '',
-      },
+      usersParams: emptyState,
       isDisabled: true,
       showParams: false,
     };
+    this.canvasRef = React.createRef();
   }
 
   onChangeLength = (e) => {
@@ -84,19 +92,9 @@ export default class App extends React.Component {
     const newParams = await axios.post(url, usersParams, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
-    threeObj(newParams.data);
-    const { boxLength, boxWidth, boxHeight } = newParams.data;
     this.setState({ 
-      currentParams: {
-        boxLength,
-        boxWidth,
-        boxHeight,
-      },
-      usersParams: {
-        boxLength: '',
-        boxWidth: '',
-        boxHeight: '',
-      },
+      currentParams: newParams.data,
+      usersParams: emptyState,
       isDisabled: true,
     });
   };
@@ -109,19 +107,9 @@ export default class App extends React.Component {
         set: 'defaultParams',
       },
     });
-    threeObj(defParams.data);
-    const { boxLength, boxWidth, boxHeight } = defParams.data;
     this.setState({ 
-      currentParams: {
-        boxLength,
-        boxWidth,
-        boxHeight,
-      },
-      usersParams: {
-        boxLength: '',
-        boxWidth: '',
-        boxHeight: '',
-      },
+      currentParams: defParams.data,
+      usersParams: emptyState,
       isDisabled: true,
     });
   };
@@ -130,9 +118,13 @@ export default class App extends React.Component {
     const newParams = await axios.get(url, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
-    threeObj(newParams.data);
-    const { boxLength, boxWidth, boxHeight } = newParams.data;
-    this.setState({ currentParams: { boxLength, boxWidth, boxHeight } });
+    this.setState({ currentParams: newParams.data });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!_.isEqual(this.state.currentParams, prevState.currentParams)) {
+      makeThreeObj(this.canvasRef.current, this.state.currentParams);
+    }
   }
 
   toggleParamsVisibility = () => {
@@ -145,7 +137,7 @@ export default class App extends React.Component {
     return (
       <div className="App">
         <div className="content">
-          <canvas id="c"></canvas>
+          <canvas id="box-wraper" ref={this.canvasRef}></canvas>
         </div>
         <div className="aside">
           <h1>Cube 3D</h1>
