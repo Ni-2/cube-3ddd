@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React from 'react';
-import { makeThreeObj } from './threeObj';
+import { makeCubeEnvWithCube, setCubeEnvParams, makeCube } from './threeObj';
 import cn from 'classnames';
 import _ from 'lodash';
 
@@ -107,6 +107,7 @@ export default class App extends React.Component {
         set: 'defaultParams',
       },
     });
+    setCubeEnvParams(this.state.currentParams, this.cubeEnv);
     this.setState({ 
       currentParams: defParams.data,
       usersParams: emptyState,
@@ -118,12 +119,19 @@ export default class App extends React.Component {
     const newParams = await axios.get(url, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
+    const { cubeName, cubeEnv, renderCube } = makeCubeEnvWithCube(this.canvasRef.current, newParams.data);
+    this.cubeName = cubeName;
+    this.cubeEnv = cubeEnv;
+    this.renderCube = renderCube;
     this.setState({ currentParams: newParams.data });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!_.isEqual(this.state.currentParams, prevState.currentParams)) {
-      makeThreeObj(this.canvasRef.current, this.state.currentParams);
+    const { currentParams } = this.state;
+    if (!_.isEqual(currentParams, prevState.currentParams)) {
+      setCubeEnvParams(currentParams, this.cubeEnv);
+      this.cubeName = makeCube(currentParams, this.cubeEnv, this.cubeName);
+      this.renderCube();
     }
   }
 

@@ -1,8 +1,45 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-export const makeThreeObj = (canvasRef, currentParams ) => {
-  const { boxLength, boxHeight, boxWidth, points, faces } = currentParams;
+export const setCubeEnvParams = (currentParams, cubeEnv) => {
+  const { boxLength, boxHeight, boxWidth } = currentParams;
+  const { camera, controls } = cubeEnv;
+
+  camera.position.set(boxLength * 2, boxHeight * 1.2, boxWidth * 3);
+  controls.target.set(boxLength / 2, boxHeight / 2, boxWidth / 2);
+  controls.update();
+};
+
+export const makeCube = (currentParams, cubeEnv, oldCubeName) => {
+  const { points, faces } = currentParams;
+  const { scene } = cubeEnv;
+
+  if (oldCubeName) scene.remove(scene.getObjectByName(oldCubeName));
+
+  const geometry = new THREE.Geometry();
+  points.forEach((point) => geometry.vertices.push(new THREE.Vector3(...point)));
+  faces.map((face) => geometry.faces.push(new THREE.Face3(...face)));
+
+  geometry.computeFaceNormals();
+
+  function makeInstance(geometry, color, x) {
+    const material = new THREE.MeshPhongMaterial({ color });
+
+    const cube = new THREE.Mesh(geometry, material);
+    const cubeName = 'Cube';
+    cube.name = cubeName;
+    scene.add(cube);
+
+    cube.position.x = x;
+
+    return cubeName;
+  }
+
+  const cubeName = makeInstance(geometry, 0xFFB300,  0);
+  return cubeName;
+};
+
+export const makeCubeEnvWithCube = (canvasRef, currentParams ) => {
   const renderer = new THREE.WebGLRenderer({ canvas: canvasRef });
 
   const fov = 50;
@@ -10,11 +47,8 @@ export const makeThreeObj = (canvasRef, currentParams ) => {
   const near = 0.1;
   const far = 2000;
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.set(boxLength * 2, boxHeight * 1.2, boxWidth * 3);
 
   const controls = new OrbitControls(camera, canvasRef);
-  controls.target.set(boxLength / 2, boxHeight / 2, boxWidth / 2);
-  controls.update();
 
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(0x61B7CF);
@@ -31,25 +65,6 @@ export const makeThreeObj = (canvasRef, currentParams ) => {
   addLight(1, 2, -2);
   addLight(1, -2, 4);
 
-  const geometry = new THREE.Geometry();
-  points.forEach((point) => geometry.vertices.push(new THREE.Vector3(...point)));
-  faces.map((face) => geometry.faces.push(new THREE.Face3(...face)));
-
-  geometry.computeFaceNormals();
-
-  function makeInstance(geometry, color, x) {
-    const material = new THREE.MeshPhongMaterial({ color });
-
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
-    cube.position.x = x;
-
-    return cube;
-  }
-
-  makeInstance(geometry, 0xFFB300,  0);
-
   function resizeRendererToDisplaySize(renderer) {
     const canvas = renderer.domElement;
     const pixelRatio = window.devicePixelRatio;
@@ -62,20 +77,23 @@ export const makeThreeObj = (canvasRef, currentParams ) => {
     return needResize;
   }
 
-  function render() {
-
+  function renderCube() {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-
     renderer.render(scene, camera);
   }
 
-  render();
-  
-  controls.addEventListener('change', render);
-  window.addEventListener('resize', render);
+  const cubeEnv = { camera, controls, scene };
+  setCubeEnvParams(currentParams, cubeEnv);
+  const cubeName = makeCube(currentParams, cubeEnv);
 
+  renderCube();
+
+  controls.addEventListener('change', renderCube);
+  window.addEventListener('resize', renderCube);
+
+  return { cubeEnv, cubeName, renderCube };
 };
